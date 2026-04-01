@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Growth & Operations Assessment — GatorPixel AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --red: #CC2222;
+    --red-dark: #A01A1A;
+    --red-light: #FADADD;
+    --black: #0D0D0D;
+    --charcoal: #1C1C1C;
+    --gray-dark: #2E2E2E;
+    --gray-mid: #555;
+    --gray-light: #F2F2F2;
+    --white: #FFFFFF;
+    --border: #E0E0E0;
+    --radius: 4px;
+    --transition: 0.2s ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-light);
+    color: var(--black);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--black);
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--red);
+  }
+  .topbar-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+  .topbar-brand span { color: #ffffff; }
+  .topbar-label {
+    font-size: 11px;
+    color: #ffffff;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--charcoal);
+    padding: 0 40px;
+  }
+  .progress-sections {
+    display: flex;
+    gap: 0;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .progress-section {
+    flex: 1;
+    padding: 10px 0 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-align: center;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .progress-section.active { color: #ffffff; border-bottom-color: var(--red); }
+  .progress-section.done { color: #ffffff; border-bottom-color: #444; }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .section-card.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    margin-bottom: 36px;
+  }
+  .section-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 1.5px;
+    color: var(--black);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--gray-mid);
+    line-height: 1.6;
+    max-width: 560px;
+  }
+
+  /* ── QUESTION ── */
+  .question {
+    margin-bottom: 28px;
+    padding: 24px 28px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-left: 4px solid transparent;
+    border-radius: var(--radius);
+    transition: border-color var(--transition);
+  }
+  .question:focus-within { border-left-color: var(--red); }
+  .question.optional { border-left-color: #ddd; }
+
+  .q-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 4px;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--red);
+    background: var(--red-light);
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .q-optional {
+    font-size: 10px;
+    font-weight: 400;
+    color: #aaa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .q-hint {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 12px;
+    margin-top: 3px;
+    line-height: 1.5;
+    padding-left: 34px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--black);
+    background: var(--gray-light);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color var(--transition), background var(--transition);
+    resize: vertical;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--red);
+    background: var(--white);
+  }
+  textarea { min-height: 90px; }
+
+  /* inline two-col */
+  .q-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media(max-width: 560px) { .q-row { grid-template-columns: 1fr; } }
+  .q-row label { font-size: 12px; font-weight: 600; color: #777; margin-bottom: 4px; display: block; }
+
+  /* ── RADIO / CHECKBOX ── */
+  .radio-group, .check-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .radio-option, .check-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--gray-light);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+  }
+  .radio-option:hover, .check-option:hover { border-color: var(--red); background: var(--red-light); }
+  .radio-option input, .check-option input { accent-color: var(--red); width: 16px; height: 16px; flex-shrink: 0; }
+  .radio-option.selected, .check-option.selected {
+    border-color: var(--red);
+    background: var(--red-light);
+    font-weight: 500;
+  }
+
+  /* ── DIVIDER ── */
+  .q-divider {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #bbb;
+    text-transform: uppercase;
+    margin: 8px 0 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── NAV BUTTONS ── */
+  .nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 12px 28px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .btn-back {
+    background: transparent;
+    color: var(--gray-mid);
+    border: 1.5px solid var(--border);
+  }
+  .btn-back:hover { border-color: var(--black); color: var(--black); }
+  .btn-next {
+    background: var(--red);
+    color: var(--white);
+  }
+  .btn-next:hover { background: var(--red-dark); }
+  .btn-submit {
+    background: var(--black);
+    color: var(--white);
+    padding: 14px 36px;
+    font-size: 14px;
+  }
+  .btn-submit:hover { background: var(--charcoal); }
+
+  .nav-counter {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  /* ── THANK YOU ── */
+  .thankyou {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+  }
+  .thankyou.active { display: block; animation: fadeIn 0.4s ease; }
+  .thankyou-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 28px;
+  }
+  .thankyou h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .thankyou p { font-size: 15px; color: var(--gray-mid); line-height: 1.7; max-width: 480px; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">GATORPIXEL <span>AI</span></div>
+  <div class="topbar-label">AI Growth & Operations Assessment</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-sections">
+    <div class="progress-section active" onclick="goTo(0)">Revenue</div>
+    <div class="progress-section" onclick="goTo(1)">Sales</div>
+    <div class="progress-section" onclick="goTo(2)">Operations</div>
+    <div class="progress-section" onclick="goTo(3)">Admin</div>
+    <div class="progress-section" onclick="goTo(4)">Technology</div>
+    <div class="progress-section" onclick="goTo(5)">Team & AI</div>
+    <div class="progress-section" onclick="goTo(6)">Costs</div>
+    <div class="progress-section" onclick="goTo(7)">Risk</div>
+    <div class="progress-section" onclick="goTo(8)">Goals</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ════════ SECTION 1: REVENUE & GROWTH ════════ -->
+<div class="section-card active" id="sec-0">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 01 of 09</div>
+    <div class="section-title">Revenue & Growth</div>
+    <div class="section-desc">Help us understand your current business performance and where you want to go.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">01</span>How many new leads or inquiries does your firm receive per month?</div>
+    <input type="number" placeholder="e.g. 40" min="0">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">02</span>What percentage of those leads convert into paying clients?</div>
+    <input type="number" placeholder="e.g. 25" min="0" max="100"> 
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">03</span>What is your average case or client value?</div>
+    <input type="number" placeholder="$ e.g. 5000" min="0">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">04</span>What are your top 2–3 most profitable case types?</div>
+    <textarea placeholder="e.g. Personal injury, contract disputes, family law..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">05</span>What is your current revenue?</div>
+    <div class="q-row">
+      <div><label>Monthly</label><input type="number" placeholder="$ Monthly"></div>
+      <div><label>Annual</label><input type="number" placeholder="$ Annual"></div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">06</span>What is your growth target over the next 12 months?</div>
+    <textarea placeholder="e.g. Grow revenue by 30%, add 2 attorneys, expand into new practice areas..."></textarea>
+  </div>
+
+  <div class="question optional">
+    <div class="q-label"><span class="q-num">07</span>If conversion increased by ~20%, what would that mean in additional monthly revenue? <span class="q-optional">Optional</span></div>
+    <input type="number" placeholder="$ Estimated additional revenue">
+  </div>
+
+  <div class="nav-bar">
+    <div></div>
+    <span class="nav-counter">1 / 9</span>
+    <button class="btn btn-next" onclick="goTo(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 2: SALES & INTAKE ════════ -->
+<div class="section-card" id="sec-1">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 02 of 09</div>
+    <div class="section-title">Sales & Intake Process</div>
+    <div class="section-desc">Walk us through what happens when a new lead comes in — from first contact to signed client.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">08</span>What happens immediately after a new lead contacts your firm?</div>
+    <textarea placeholder="Describe the first 30 minutes after a lead submits a form or calls in..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">09</span>How quickly does someone typically respond to a new inquiry?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="response-time"> Within minutes (automated)</label>
+      <label class="radio-option"><input type="radio" name="response-time"> Within 1 hour</label>
+      <label class="radio-option"><input type="radio" name="response-time"> Within same business day</label>
+      <label class="radio-option"><input type="radio" name="response-time"> Next business day or longer</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">10</span>Is the first response automated or manual?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="first-response"> Fully automated</label>
+      <label class="radio-option"><input type="radio" name="first-response"> Partially automated</label>
+      <label class="radio-option"><input type="radio" name="first-response"> Fully manual</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">11</span>Do all leads receive structured follow-up?</div>
+    <div class="q-hint">If yes, describe the sequence below.</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="followup"> Yes — structured and consistent</label>
+      <label class="radio-option"><input type="radio" name="followup"> Sometimes — depends on the staff member</label>
+      <label class="radio-option"><input type="radio" name="followup"> No — follow-up is informal</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">12</span>How many follow-ups are typically sent, and are they automated or manual?</div>
+    <div class="q-row">
+      <div><label>Number of follow-ups</label><input type="number" placeholder="e.g. 3" min="0"></div>
+      <div><label>Method</label>
+        <select>
+          <option value="">Select...</option>
+          <option>Automated</option>
+          <option>Manual</option>
+          <option>Mix of both</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">13</span>How do you determine whether a lead is qualified?</div>
+    <textarea placeholder="Describe your qualification criteria or process..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">14</span>Do you have a standardized intake process?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="intake"> Yes — documented and followed consistently</label>
+      <label class="radio-option"><input type="radio" name="intake"> Partially — some steps are standardized</label>
+      <label class="radio-option"><input type="radio" name="intake"> No — it varies by staff or situation</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">15</span>Where do leads most commonly drop off in your pipeline?</div>
+    <textarea placeholder="e.g. After the initial consult, during follow-up, at pricing discussion..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">16</span>Do you track why leads don't convert, and do you track conversion by source?</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> We track reasons leads don't convert</label>
+      <label class="check-option"><input type="checkbox"> We track conversion rate by lead source</label>
+      <label class="check-option"><input type="checkbox"> Neither — we don't currently track this</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">17</span>What are your top lead sources?</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> Referrals</label>
+      <label class="check-option"><input type="checkbox"> Google / SEO</label>
+      <label class="check-option"><input type="checkbox"> Paid advertising</label>
+      <label class="check-option"><input type="checkbox"> Social media</label>
+      <label class="check-option"><input type="checkbox"> Directory listings (Avvo, FindLaw, etc.)</label>
+      <label class="check-option"><input type="checkbox"> Other</label>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(0)">&larr; Back</button>
+    <span class="nav-counter">2 / 9</span>
+    <button class="btn btn-next" onclick="goTo(2)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 3: OPERATIONS ════════ -->
+<div class="section-card" id="sec-2">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 03 of 09</div>
+    <div class="section-title">Operations & Case Workflow</div>
+    <div class="section-desc">Help us understand how work flows through your firm once a client is signed.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">18</span>If your intake volume doubled tomorrow, what would break first?</div>
+    <textarea placeholder="e.g. Staff capacity, intake process, case management system..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">19</span>What currently limits your capacity to take on more cases?</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> Attorney time</label>
+      <label class="check-option"><input type="checkbox"> Paralegal / support staff time</label>
+      <label class="check-option"><input type="checkbox"> Administrative bottlenecks</label>
+      <label class="check-option"><input type="checkbox"> Technology limitations</label>
+      <label class="check-option"><input type="checkbox"> Cash flow / hiring constraints</label>
+      <label class="check-option"><input type="checkbox"> Other</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">20</span>Describe your workflow from signed client to resolution.</div>
+    <div class="q-hint">Walk us through the key stages of a case from start to finish.</div>
+    <textarea style="min-height:120px;" placeholder="Stage 1: Onboarding → Stage 2: Discovery → Stage 3: ..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">21</span>Which tasks consume the most time per case?</div>
+    <textarea placeholder="e.g. Document review, client communication, court filings, drafting..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">22</span>Approximately how many hours per case does each role spend?</div>
+    <div class="q-row">
+      <div><label>Attorney (hrs)</label><input type="number" placeholder="e.g. 12" min="0"></div>
+      <div><label>Paralegal (hrs)</label><input type="number" placeholder="e.g. 8" min="0"></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-size:12px;font-weight:600;color:#777;display:block;margin-bottom:4px;">Admin (hrs)</label>
+      <input type="number" placeholder="e.g. 4" min="0">
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">23</span>Where do delays most commonly occur in a case?</div>
+    <textarea placeholder="e.g. Waiting on client documents, court scheduling, internal handoffs..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">24</span>Where is data manually duplicated between systems or documents?</div>
+    <textarea placeholder="e.g. Re-entering client info from intake form into case management..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">25</span>What tasks are attorneys currently doing that shouldn't require their expertise?</div>
+    <textarea placeholder="e.g. Scheduling, status emails, document formatting, data entry..."></textarea>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(1)">&larr; Back</button>
+    <span class="nav-counter">3 / 9</span>
+    <button class="btn btn-next" onclick="goTo(3)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 4: ADMIN ════════ -->
+<div class="section-card" id="sec-3">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 04 of 09</div>
+    <div class="section-title">Admin & Client Communication</div>
+    <div class="section-desc">Understand where administrative time is being consumed and how clients are communicated with.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">26</span>How many hours per week does leadership spend on email?</div>
+    <input type="number" placeholder="Hours per week" min="0">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">27</span>How is scheduling currently handled?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="scheduling"> Automated scheduling tool (Calendly, etc.)</label>
+      <label class="radio-option"><input type="radio" name="scheduling"> Admin assistant manages calendar</label>
+      <label class="radio-option"><input type="radio" name="scheduling"> Back-and-forth email / phone</label>
+      <label class="radio-option"><input type="radio" name="scheduling"> Mix of methods</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">28</span>Are meeting notes captured and distributed after calls or meetings?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="notes"> Yes — systematically captured and stored</label>
+      <label class="radio-option"><input type="radio" name="notes"> Sometimes — depends on the meeting</label>
+      <label class="radio-option"><input type="radio" name="notes"> Rarely or never</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">29</span>How do you primarily communicate with active clients?</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> Phone calls</label>
+      <label class="check-option"><input type="checkbox"> Email</label>
+      <label class="check-option"><input type="checkbox"> Client portal</label>
+      <label class="check-option"><input type="checkbox"> Text / SMS</label>
+      <label class="check-option"><input type="checkbox"> In-person meetings</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">30</span>Are client-facing responses templated or written from scratch each time?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="templates"> Mostly templated</label>
+      <label class="radio-option"><input type="radio" name="templates"> Mix of both</label>
+      <label class="radio-option"><input type="radio" name="templates"> Mostly written fresh each time</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">31</span>What do clients most commonly complain about or get confused by?</div>
+    <textarea placeholder="e.g. Slow updates, unclear next steps, billing questions, process transparency..."></textarea>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(2)">&larr; Back</button>
+    <span class="nav-counter">4 / 9</span>
+    <button class="btn btn-next" onclick="goTo(4)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 5: TECHNOLOGY ════════ -->
+<div class="section-card" id="sec-4">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 05 of 09</div>
+    <div class="section-title">Technology & Data</div>
+    <div class="section-desc">Help us understand your current tech stack and how well your systems talk to each other.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">32</span>What systems does your firm currently use?</div>
+    <div class="q-hint">Check all that apply and add any others in the text field below.</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> Case management software (Clio, MyCase, PracticePanther, etc.)</label>
+      <label class="check-option"><input type="checkbox"> CRM system</label>
+      <label class="check-option"><input type="checkbox"> Document management</label>
+      <label class="check-option"><input type="checkbox"> Billing / invoicing software</label>
+      <label class="check-option"><input type="checkbox"> E-signature tool (DocuSign, etc.)</label>
+      <label class="check-option"><input type="checkbox"> Scheduling software</label>
+      <label class="check-option"><input type="checkbox"> Marketing / email automation</label>
+    </div>
+    <textarea style="margin-top:12px;" placeholder="List specific tools by name, including any not mentioned above..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">33</span>How well do your systems integrate with each other?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="integration"> Fully integrated — data flows automatically</label>
+      <label class="radio-option"><input type="radio" name="integration"> Partially integrated — some manual steps required</label>
+      <label class="radio-option"><input type="radio" name="integration"> Mostly disconnected — lots of manual data entry</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">34</span>Where is client and case data currently stored?</div>
+    <textarea placeholder="e.g. Primarily in Clio, some in spreadsheets, email attachments, shared drive..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">35</span>How would you rate the quality and structure of your firm's data?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="data-quality"> Clean and well-organized</label>
+      <label class="radio-option"><input type="radio" name="data-quality"> Mostly organized with some gaps</label>
+      <label class="radio-option"><input type="radio" name="data-quality"> Inconsistent and fragmented</label>
+      <label class="radio-option"><input type="radio" name="data-quality"> We're not sure</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">36</span>Where do you currently use automation in your workflow?</div>
+    <textarea placeholder="e.g. Auto-confirmation emails, automated billing reminders, document templates..."></textarea>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(3)">&larr; Back</button>
+    <span class="nav-counter">5 / 9</span>
+    <button class="btn btn-next" onclick="goTo(5)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 6: TEAM & AI READINESS ════════ -->
+<div class="section-card" id="sec-5">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 06 of 09</div>
+        <div class="section-title">Team & AI Readiness</div>
+    <div class="section-desc">Understanding your team's current relationship with technology helps us tailor the right implementation approach.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">37</span>Is AI currently being used anywhere in your firm?</div>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="ai-usage"> Yes — actively and intentionally</label>
+      <label class="radio-option"><input type="radio" name="ai-usage"> Informally — a few people use ChatGPT occasionally</label>
+      <label class="radio-option"><input type="radio" name="ai-usage"> No — not yet</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">38</span>Who on your team is most comfortable with technology?</div>
+    <input type="text" placeholder="Name and/or role...">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">39</span>Who on your team is most resistant to new technology?</div>
+    <div class="q-hint">This helps us plan change management and training accordingly.</div>
+    <input type="text" placeholder="Role or general description...">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">40</span>How does your firm currently onboard and train staff on new tools?</div>
+    <textarea placeholder="e.g. Recorded videos, one-on-one training, written SOPs..."></textarea>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(4)">&larr; Back</button>
+    <span class="nav-counter">6 / 9</span>
+    <button class="btn btn-next" onclick="goTo(6)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 7: COST OF INEFFICIENCY ════════ -->
+<div class="section-card" id="sec-6">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 07 of 09</div>
+    <div class="section-title">Cost of Inefficiency</div>
+    <div class="section-desc">This section helps us quantify what current gaps are actually costing your firm in real dollars.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">41</span>Roughly how many qualified leads do you lose per month due to slow follow-up or poor intake?</div>
+    <input type="number" placeholder="Estimated leads lost per month" min="0">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">42</span>What is your average client value?</div>
+    <input type="number" placeholder="$ Average value per client" min="0">
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">43</span>How many hours per week does your team spend on tasks that could be automated?</div>
+    <div class="q-row">
+      <div><label>Attorney (hrs/week)</label><input type="number" placeholder="e.g. 5" min="0"></div>
+      <div><label>Staff (hrs/week)</label><input type="number" placeholder="e.g. 12" min="0"></div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">44</span>What is the approximate hourly billing rate of your attorneys?</div>
+    <input type="number" placeholder="$ per hour" min="0">
+  </div>
+
+  <div class="question optional">
+    <div class="q-label"><span class="q-num">45</span>If you recovered those hours for billable work, what would that be worth monthly? <span class="q-optional">Optional</span></div>
+    <input type="number" placeholder="$ Estimated monthly value" min="0">
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(5)">&larr; Back</button>
+    <span class="nav-counter">7 / 9</span>
+    <button class="btn btn-next" onclick="goTo(7)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 8: RISK & COMPLIANCE ════════ -->
+<div class="section-card" id="sec-7">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 08 of 09</div>
+    <div class="section-title">Risk & Compliance</div>
+    <div class="section-desc">Ensuring any AI implementation aligns with your compliance obligations and client data requirements.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">46</span>What compliance requirements is your firm subject to?</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> State bar data and confidentiality rules</label>
+      <label class="check-option"><input type="checkbox"> HIPAA (if handling medical cases)</label>
+      <label class="check-option"><input type="checkbox"> GDPR or CCPA data privacy requirements</label>
+      <label class="check-option"><input type="checkbox"> Financial compliance (FINRA, etc.)</label>
+      <label class="check-option"><input type="checkbox"> Other</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">47</span>Are there restrictions on where client data can be stored or processed?</div>
+    <textarea placeholder="e.g. No third-party cloud, jurisdiction restrictions, on-premise only..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">48</span>What are your biggest concerns about incorporating AI into your practice?</div>
+    <div class="check-group">
+      <label class="check-option"><input type="checkbox"> Client confidentiality and data security</label>
+      <label class="check-option"><input type="checkbox"> Accuracy and reliability of AI outputs</label>
+      <label class="check-option"><input type="checkbox"> Staff resistance or adoption challenges</label>
+      <label class="check-option"><input type="checkbox"> Ethical or bar compliance concerns</label>
+      <label class="check-option"><input type="checkbox"> Cost of implementation</label>
+      <label class="check-option"><input type="checkbox"> Not sure where to start</label>
+    </div>
+    <textarea style="margin-top:12px;" placeholder="Any additional concerns or notes..."></textarea>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(6)">&larr; Back</button>
+    <span class="nav-counter">8 / 9</span>
+    <button class="btn btn-next" onclick="goTo(8)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SECTION 9: SUCCESS CRITERIA ════════ -->
+<div class="section-card" id="sec-8">
+  <div class="section-header">
+    <div class="section-eyebrow">Section 09 of 09</div>
+    <div class="section-title">Success Criteria</div>
+    <div class="section-desc">Help us understand what a successful outcome looks like for you — in your own words.</div>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">49</span>What does success look like 12 months from now?</div>
+    <textarea placeholder="Describe what changes — in revenue, operations, team capacity, client experience..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">50</span>What do you most want off your plate?</div>
+    <textarea placeholder="What tasks, responsibilities, or headaches would you most like to eliminate?"></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">51</span>Describe your ideal workflow 12 months from now.</div>
+    <textarea style="min-height:120px;" placeholder="Paint a picture of how your firm operates when things are running the way you want..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="q-label"><span class="q-num">52</span>What should your team be spending more time on that they currently can't?</div>
+    <textarea placeholder="e.g. High-value client work, business development, strategy, courtroom time..."></textarea>
+  </div>
+
+  <div class="question optional">
+    <div class="q-label"><span class="q-num">53</span>Anything else you'd like us to know before your assessment? <span class="q-optional">Optional</span></div>
+    <textarea placeholder="Any additional context, constraints, or priorities..."></textarea>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-back" onclick="goTo(7)">&larr; Back</button>
+    <span class="nav-counter">9 / 9</span>
+    <button class="btn btn-submit" onclick="submitForm()">Submit Assessment &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ THANK YOU ════════ -->
+<div class="thankyou" id="thankyou">
+  <div class="thankyou-icon">✓</div>
+  <h2>Assessment Received</h2>
+  <p>Thank you for completing the AI Growth &amp; Operations Assessment. A member of the GatorPixel AI team will review your responses and reach out within one business day to schedule your strategy session.</p>
+</div>
+
+</div><!-- /main -->
+
+<script>
+  let current = 0;
+
+  function goTo(index) {
+    document.getElementById('sec-' + current).classList.remove('active');
+    document.querySelectorAll('.progress-section')[current].classList.remove('active');
+    document.querySelectorAll('.progress-section')[current].classList.add('done');
+    current = index;
+    document.getElementById('sec-' + current).classList.add('active');
+    document.querySelectorAll('.progress-section').forEach((s, i) => {
+      s.classList.remove('active', 'done');
+      if (i < current) s.classList.add('done');
+      else if (i === current) s.classList.add('active');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function submitForm() {
+    const radioNames = ['response-time','first-response','followup','intake','scheduling','notes','templates','integration','data-quality','ai-usage'];
+    const data = {};
+    radioNames.forEach(name => {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      data[name] = checked ? checked.closest('label').textContent.trim() : 'No answer';
+    });
+    document.querySelectorAll('textarea').forEach((ta, i) => {
+      const questionEl = ta.closest('.question');
+      const labelEl = questionEl ? questionEl.querySelector('.q-label') : null;
+      const key = labelEl ? labelEl.textContent.trim().substring(0, 80) : 'Open answer ' + (i + 1);
+      data[key] = ta.value || 'No answer';
+    });
+    document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"]').forEach((inp, i) => {
+      const questionEl = inp.closest('.question');
+      const labelEl = questionEl ? questionEl.querySelector('.q-label') : null;
+      const key = labelEl ? labelEl.textContent.trim().substring(0, 80) : 'Field ' + (i + 1);
+      data[key] = inp.value || 'No answer';
+    });
+    try {
+      const response = await fetch('https://formspree.io/f/mnjoqprq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert('Submission error: ' + (result.error || response.status) + '. Please check your Formspree account and verify your email address.');
+        return;
+      }
+    } catch(e) {
+      alert('Network error during submission: ' + e.message);
+      console.error('Submission error:', e);
+      return;
+    }
+    document.getElementById('sec-8').classList.remove('active');
+    document.querySelectorAll('.progress-section').forEach(s => { s.classList.remove('active'); s.classList.add('done'); });
+    document.getElementById('thankyou').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('.radio-option input').forEach(input => {
+    input.addEventListener('change', () => {
+      document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => r.closest('.radio-option').classList.remove('selected'));
+      input.closest('.radio-option').classList.add('selected');
+    });
+  });
+
+  document.querySelectorAll('.check-option input').forEach(input => {
+    input.addEventListener('change', () => {
+      input.closest('.check-option').classList.toggle('selected', input.checked);
+    });
+  });
+</script>
+</body>
+</html>
