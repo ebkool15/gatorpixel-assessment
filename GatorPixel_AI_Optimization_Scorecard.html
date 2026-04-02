@@ -239,6 +239,31 @@
 
 <div class="main">
 
+
+  <!-- IDENTITY -->
+  <div class="section" id="identity-section">
+    <div class="section-header">
+      <h2>Your Information</h2>
+      <span>Required before submitting</span>
+    </div>
+    <div class="q-row" style="background:white;">
+      <div class="q-text" style="font-weight:600;">Full Name <span style="color:var(--red);">*</span></div>
+      <div style="flex:1.5;"><input type="text" name="Full Name" placeholder="e.g. Jane Smith" style="width:100%;padding:7px 10px;border:1px solid #DDD;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:13px;" required></div>
+    </div>
+    <div class="q-row" style="background:var(--gray-light);">
+      <div class="q-text" style="font-weight:600;">Company Name <span style="color:var(--red);">*</span></div>
+      <div style="flex:1.5;"><input type="text" name="Company Name" placeholder="e.g. Smith Law Group" style="width:100%;padding:7px 10px;border:1px solid #DDD;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:13px;" required></div>
+    </div>
+    <div class="q-row" style="background:white;">
+      <div class="q-text" style="font-weight:600;">Email Address <span style="color:var(--red);">*</span></div>
+      <div style="flex:1.5;"><input type="email" name="Email Address" placeholder="e.g. jane@smithlawgroup.com" style="width:100%;padding:7px 10px;border:1px solid #DDD;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:13px;" required></div>
+    </div>
+    <div class="q-row" style="background:var(--gray-light);">
+      <div class="q-text" style="font-weight:600;">Phone Number <span style="color:var(--gray-mid);font-size:11px;font-weight:400;">— Optional</span></div>
+      <div style="flex:1.5;"><input type="text" name="Phone Number" placeholder="e.g. (555) 123-4567" style="width:100%;padding:7px 10px;border:1px solid #DDD;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+    </div>
+  </div>
+
   <!-- SECTION 1 -->
   <div class="section">
     <div class="section-header">
@@ -514,25 +539,28 @@
   <!-- TOTAL -->
   <div class="total-box">
     <div class="total-label">YOUR TOTAL SCORE</div>
-    <div class="total-score"><span class="total-line"></span> / 100 &nbsp;<span id="total-display" style="color:var(--red);font-size:14px;"></span></div>
+    <div class="total-score">
+      <span id="total-display" style="font-size:28px;font-weight:700;color:var(--red);">0</span>
+      <span style="font-size:18px;color:var(--gray-mid);"> / 100</span>
+    </div>
   </div>
 
   <!-- WHAT YOUR SCORE MEANS -->
   <div class="wys">
     <div class="wys-title">What Your Score Means</div>
-    <div class="score-range green">
+    <div class="score-range green" id="band-green">
       <div class="range">85–100</div>
       <div class="range-desc"><b>AI-Optimized Organization</b> — You're ahead of most. Focus on scaling and protecting your advantage.</div>
     </div>
-    <div class="score-range yellow">
+    <div class="score-range yellow" id="band-yellow">
       <div class="range">65–84</div>
       <div class="range-desc"><b>Moderate AI Opportunity</b> — Strong foundations with clear gaps. A few targeted AI implementations unlock major ROI.</div>
     </div>
-    <div class="score-range orange">
+    <div class="score-range orange" id="band-orange">
       <div class="range">45–64</div>
       <div class="range-desc"><b>Significant Performance Gaps</b> — Losing time and revenue to manual processes daily. Prioritized AI adoption has immediate impact.</div>
     </div>
-    <div class="score-range redband">
+    <div class="score-range redband" id="band-red">
       <div class="range">Below 45</div>
       <div class="range-desc"><b>AI Transformation Required</b> — Operating on outdated systems. AI transformation is not optional — it's urgent.</div>
     </div>
@@ -614,14 +642,41 @@
       document.getElementById(id).textContent = answered > 0 ? `${score} / ${maxes[id]}` : `____ / ${maxes[id]}`;
       total += score;
     }
-    const allAnswered = Object.values(sections).flat().filter(q => document.querySelector(`input[name="${q}"]:checked`)).length;
-    document.getElementById('total-display').textContent = allAnswered > 0 ? `(${total})` : '';
+    document.getElementById('total-display').textContent = total;
+    // Highlight score band
+    const bands = [
+      { min: 85, id: 'band-green' },
+      { min: 65, id: 'band-yellow' },
+      { min: 45, id: 'band-orange' },
+      { min: 0,  id: 'band-red' },
+    ];
+    document.querySelectorAll('.score-range').forEach(el => el.style.opacity = '0.4');
+    for (const band of bands) {
+      if (total >= band.min) {
+        const el = document.getElementById(band.id);
+        if (el) { el.style.opacity = '1'; el.style.fontWeight = '700'; }
+        break;
+      }
+    }
   }
 
   document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', updateScores));
 
   async function submitScorecard() {
-    const data = { _subject: 'GatorPixel AI Scorecard Submission' };
+    const fullName = document.querySelector('input[name="Full Name"]').value.trim();
+    const company = document.querySelector('input[name="Company Name"]').value.trim();
+    const email = document.querySelector('input[name="Email Address"]').value.trim();
+    if (!fullName || !company || !email) {
+      alert('Please fill in your Name, Company, and Email before submitting.');
+      return;
+    }
+    const data = {
+      _subject: 'GatorPixel AI Scorecard Submission',
+      'Full Name': fullName,
+      'Company Name': company,
+      'Email Address': email,
+      'Phone Number': document.querySelector('input[name="Phone Number"]').value.trim() || 'Not provided',
+    };
     let total = 0;
     for (const [id, qs] of Object.entries(sections)) {
       qs.forEach(q => {
