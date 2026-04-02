@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Performance Optimization Scorecard — GatorPixel AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --red: #CC2222;
+    --red-dark: #A01A1A;
+    --black: #0D0D0D;
+    --charcoal: #1C1C1C;
+    --gray-dark: #2E2E2E;
+    --gray-mid: #555;
+    --gray-light: #F2F2F2;
+    --white: #FFFFFF;
+    --green-bg: #E8F5E9; --green-txt: #2E7D32;
+    --yellow-bg: #FFF9C4; --yellow-txt: #F57F17;
+    --orange-bg: #FFF3E0; --orange-txt: #E65100;
+    --redband-bg: #FFEBEE; --redband-txt: #C62828;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--gray-light); color: var(--gray-dark); }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--black);
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--red);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-brand { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--white); letter-spacing: 2px; }
+  .topbar-brand span { color: var(--white); }
+  .topbar-label { font-size: 11px; color: var(--white); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--white);
+    text-align: center;
+    padding: 36px 24px 28px;
+    border-bottom: 1px solid #E0E0E0;
+  }
+  .hero h1 { font-size: 28px; font-weight: 700; color: var(--gray-dark); margin-bottom: 8px; }
+  .hero p { font-size: 13px; color: var(--gray-mid); max-width: 560px; margin: 0 auto 14px; line-height: 1.6; }
+  .instructions {
+    display: inline-block;
+    background: var(--gray-light);
+    border-left: 3px solid var(--red);
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--gray-mid);
+    text-align: left;
+    max-width: 600px;
+    width: 100%;
+  }
+  .instructions b { color: var(--gray-dark); }
+
+  /* ── MAIN ── */
+  .main { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  /* ── SECTION ── */
+  .section { background: var(--white); margin-bottom: 28px; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .section-header {
+    background: var(--red);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-header h2 { font-size: 12px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; text-transform: uppercase; }
+  .section-header span { font-size: 10px; color: rgba(255,255,255,0.75); letter-spacing: 0.5px; }
+
+  /* ── SCALE LABEL ROW ── */
+  .scale-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 16px 2px;
+    font-size: 10px;
+    color: var(--gray-mid);
+    border-bottom: 1px solid #F0F0F0;
+  }
+
+  /* ── QUESTION ROW ── */
+  .q-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #F0F0F0;
+    gap: 12px;
+  }
+  .q-row:nth-child(odd) { background: var(--gray-light); }
+  .q-row:nth-child(even) { background: var(--white); }
+  .q-num { font-size: 11px; font-weight: 700; color: var(--red); min-width: 24px; }
+  .q-text { font-size: 12px; color: var(--gray-dark); flex: 1; line-height: 1.5; }
+  .q-boxes { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+  .q-boxes label { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+  .q-boxes label input[type="radio"] { display: none; }
+  .q-boxes label .box {
+    width: 22px; height: 22px;
+    border: 1.5px solid #AAAAAA;
+    border-radius: 2px;
+    background: white;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .q-boxes label input[type="radio"]:checked + .box {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .q-boxes label input[type="radio"]:checked + .box::after {
+    content: '✓';
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .q-boxes label .box-num { font-size: 9px; color: var(--gray-mid); }
+
+  /* ── SUBTOTAL ── */
+  .subtotal-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--gray-light);
+    border-top: 2px solid var(--red);
+    gap: 8px;
+  }
+  .subtotal-label { font-size: 11px; font-weight: 700; color: var(--gray-dark); }
+  .subtotal-score { font-size: 13px; font-weight: 700; color: var(--red); min-width: 60px; text-align: right; }
+
+  /* ── TOTAL BOX ── */
+  .total-box {
+    background: var(--white);
+    border: 2px solid var(--red);
+    border-radius: 4px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .total-box .total-label { font-size: 16px; font-weight: 700; color: var(--gray-dark); }
+  .total-box .total-score { font-size: 18px; font-weight: 700; color: var(--gray-dark); }
+  .total-line { width: 100px; border-bottom: 2px solid var(--gray-dark); display: inline-block; margin-right: 6px; }
+
+  /* ── WHAT YOUR SCORE MEANS ── */
+  .wys { background: var(--white); border-radius: 4px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 28px; }
+  .wys-title { text-align: center; padding: 20px 16px 12px; font-size: 22px; font-weight: 700; color: var(--gray-dark); }
+  .score-range { display: flex; align-items: flex-start; padding: 12px 16px; border-bottom: 1px solid #F0F0F0; gap: 16px; }
+  .score-range .range { font-size: 13px; font-weight: 700; min-width: 64px; text-align: center; padding-top: 1px; }
+  .score-range .range-desc { font-size: 12px; color: var(--gray-dark); line-height: 1.5; }
+  .score-range .range-desc b { font-weight: 700; }
+  .green  { background: var(--green-bg);    } .green  .range { color: var(--green-txt);    }
+  .yellow { background: var(--yellow-bg);   } .yellow .range { color: var(--yellow-txt);   }
+  .orange { background: var(--orange-bg);   } .orange .range { color: var(--orange-txt);   }
+  .redband{ background: var(--redband-bg);  } .redband .range { color: var(--redband-txt); }
+
+  /* ── WHERE TO FOCUS ── */
+  .focus { background: var(--white); border-radius: 4px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 28px; padding: 24px; }
+  .focus h2 { font-size: 18px; font-weight: 700; color: var(--gray-dark); margin-bottom: 4px; }
+  .focus .focus-intro { font-size: 12px; color: var(--gray-mid); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #E0E0E0; }
+  .focus-intro b { color: var(--gray-dark); }
+  .focus-item { padding: 10px 0; border-bottom: 1px solid #F0F0F0; }
+  .focus-item:last-child { border-bottom: none; }
+  .focus-item h3 { font-size: 12px; font-weight: 700; color: var(--gray-dark); margin-bottom: 3px; }
+  .focus-item p  { font-size: 12px; color: var(--gray-mid); line-height: 1.5; }
+
+  /* ── CTA ── */
+  .cta { background: var(--black); border-radius: 4px; padding: 32px 24px; text-align: center; margin-bottom: 28px; }
+  .cta h2 { font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+  .cta .cta-sub { font-size: 12px; color: #AAAAAA; margin-bottom: 10px; }
+  .cta .cta-quote { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+  .cta ul { list-style: none; margin-bottom: 16px; }
+  .cta ul li { font-size: 12px; color: #CCCCCC; margin-bottom: 6px; }
+  .cta ul li::before { content: '• '; color: var(--red); font-weight: 700; }
+  .cta .cta-link { font-size: 13px; font-weight: 700; color: var(--white); }
+  .cta .cta-link a { color: var(--white); text-decoration: underline; }
+
+  /* ── SUBMIT ── */
+  .submit-wrap { text-align: center; margin-bottom: 16px; }
+  .btn-submit {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .btn-submit:hover { background: var(--red-dark); }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; font-size: 11px; color: #AAAAAA; padding-bottom: 24px; }
+
+  /* ── THANK YOU ── */
+  .thankyou { display: none; text-align: center; padding: 60px 24px; background: var(--white); border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 28px; }
+  .thankyou.active { display: block; }
+  .thankyou-icon { font-size: 48px; color: var(--red); margin-bottom: 16px; }
+  .thankyou h2 { font-size: 22px; font-weight: 700; color: var(--gray-dark); margin-bottom: 10px; }
+  .thankyou p { font-size: 13px; color: var(--gray-mid); max-width: 420px; margin: 0 auto; line-height: 1.7; }
+
+  @media (max-width: 600px) {
+    .topbar { padding: 10px 16px; }
+    .main { padding: 20px 12px 60px; }
+    .hero { padding: 24px 16px 20px; }
+    .hero h1 { font-size: 20px; }
+    .q-boxes label .box { width: 18px; height: 18px; }
+    .q-boxes { gap: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">GATORPIXEL <span>AI</span></div>
+  <div class="topbar-label">AI Performance Optimization Scorecard</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>AI Performance Optimization Scorecard</h1>
+  <p>Evaluate how AI can increase revenue, efficiency, and decision clarity in your organization.</p>
+  <div class="instructions">
+    <b>Instructions:</b> Rate each statement <b>1 (Strongly Disagree)</b> to <b>5 (Strongly Agree)</b>. Be honest. Total your score at the end.
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 1: Sales &amp; Marketing Efficiency</h2>
+      <span>1=Strongly Disagree → 5=Strongly Agree</span>
+    </div>
+    <div class="scale-row">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
+    <div class="q-row">
+      <div class="q-num">01</div>
+      <div class="q-text">Our CRM automatically updates records, triggers follow-up sequences, and requires no manual data entry from our sales team.</div>
+      <div class="q-boxes" data-name="q01">
+        <label><input type="radio" name="q01" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q01" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q01" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q01" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q01" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">02</div>
+      <div class="q-text">Lead follow-ups are instant or automated.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q02" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q02" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q02" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q02" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q02" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">03</div>
+      <div class="q-text">We have a clear AI-assisted lead qualification process.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q03" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q03" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q03" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q03" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q03" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">04</div>
+      <div class="q-text">We have a clear AI-assisted lead generation process.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q04" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q04" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q04" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q04" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q04" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">05</div>
+      <div class="q-text">We repurpose marketing content efficiently across platforms.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q05" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q05" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q05" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q05" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q05" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">06</div>
+      <div class="q-text">We have measured and confirmed that our sales team spends less than 20% of their week on administrative tasks.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q06" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q06" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q06" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q06" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q06" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">07</div>
+      <div class="q-text">We have automated reporting on campaign and sales performance.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q07" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q07" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q07" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q07" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q07" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">08</div>
+      <div class="q-text">Our sales pipeline data is accurate, up to date, and visible to leadership in real time.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q08" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q08" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q08" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q08" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q08" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="subtotal-row">
+      <div class="subtotal-label">Section Subtotal</div>
+      <div class="subtotal-score" id="sub1">____ / 40</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 2: Leadership &amp; Decision-Making</h2>
+      <span>1=Strongly Disagree → 5=Strongly Agree</span>
+    </div>
+    <div class="scale-row">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
+    <div class="q-row">
+      <div class="q-num">09</div>
+      <div class="q-text">Our leadership team receives clean, summarized performance data weekly.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q09" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q09" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q09" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q09" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q09" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">10</div>
+      <div class="q-text">We can quickly identify operational bottlenecks.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q10" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q10" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q10" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q10" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q10" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">11</div>
+      <div class="q-text">Leadership and team leads collectively spend fewer than 3 hours per week in status update meetings — and we have data to confirm it.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q11" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q11" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q11" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q11" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q11" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">12</div>
+      <div class="q-text">We have automated dashboards (not manual reporting).</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q12" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q12" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q12" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q12" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q12" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">13</div>
+      <div class="q-text">Strategic decisions are supported by real-time data.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q13" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q13" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q13" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q13" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q13" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="subtotal-row">
+      <div class="subtotal-label">Section Subtotal</div>
+      <div class="subtotal-score" id="sub2">____ / 25</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 3: Operations &amp; Delivery</h2>
+      <span>1=Strongly Disagree → 5=Strongly Agree</span>
+    </div>
+    <div class="scale-row">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
+    <div class="q-row">
+      <div class="q-num">14</div>
+      <div class="q-text">SOPs are documented and searchable.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q14" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q14" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q14" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q14" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q14" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">15</div>
+      <div class="q-text">Zero manual copy-pasting or re-entry of data occurs between any of our platforms, tools, or systems.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q15" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q15" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q15" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q15" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q15" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">16</div>
+      <div class="q-text">Project workflows are clearly mapped and partially automated.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q16" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q16" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q16" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q16" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q16" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="subtotal-row">
+      <div class="subtotal-label">Section Subtotal</div>
+      <div class="subtotal-score" id="sub3">____ / 15</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Section 4: Administrative Load</h2>
+      <span>1=Strongly Disagree → 5=Strongly Agree</span>
+    </div>
+    <div class="scale-row">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
+    <div class="q-row">
+      <div class="q-num">17</div>
+      <div class="q-text">Email does not overwhelm leadership.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q17" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q17" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q17" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q17" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q17" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">18</div>
+      <div class="q-text">Calendar scheduling is automated.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q18" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q18" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q18" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q18" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q18" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">19</div>
+      <div class="q-text">Meeting notes are captured and summarized.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q19" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q19" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q19" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q19" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q19" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="q-row">
+      <div class="q-num">20</div>
+      <div class="q-text">Customer service responses are systemized or templated.</div>
+      <div class="q-boxes">
+        <label><input type="radio" name="q20" value="1"><div class="box"></div></label>
+        <label><input type="radio" name="q20" value="2"><div class="box"></div></label>
+        <label><input type="radio" name="q20" value="3"><div class="box"></div></label>
+        <label><input type="radio" name="q20" value="4"><div class="box"></div></label>
+        <label><input type="radio" name="q20" value="5"><div class="box"></div></label>
+      </div>
+    </div>
+    <div class="subtotal-row">
+      <div class="subtotal-label">Section Subtotal</div>
+      <div class="subtotal-score" id="sub4">____ / 20</div>
+    </div>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="total-box">
+    <div class="total-label">YOUR TOTAL SCORE</div>
+    <div class="total-score"><span class="total-line"></span> / 100 &nbsp;<span id="total-display" style="color:var(--red);font-size:14px;"></span></div>
+  </div>
+
+  <!-- WHAT YOUR SCORE MEANS -->
+  <div class="wys">
+    <div class="wys-title">What Your Score Means</div>
+    <div class="score-range green">
+      <div class="range">85–100</div>
+      <div class="range-desc"><b>AI-Optimized Organization</b> — You're ahead of most. Focus on scaling and protecting your advantage.</div>
+    </div>
+    <div class="score-range yellow">
+      <div class="range">65–84</div>
+      <div class="range-desc"><b>Moderate AI Opportunity</b> — Strong foundations with clear gaps. A few targeted AI implementations unlock major ROI.</div>
+    </div>
+    <div class="score-range orange">
+      <div class="range">45–64</div>
+      <div class="range-desc"><b>Significant Performance Gaps</b> — Losing time and revenue to manual processes daily. Prioritized AI adoption has immediate impact.</div>
+    </div>
+    <div class="score-range redband">
+      <div class="range">Below 45</div>
+      <div class="range-desc"><b>AI Transformation Required</b> — Operating on outdated systems. AI transformation is not optional — it's urgent.</div>
+    </div>
+  </div>
+
+  <!-- WHERE TO FOCUS -->
+  <div class="focus">
+    <h2>WHERE TO FOCUS FIRST</h2>
+    <div class="focus-intro">
+      <b>Lowest section score = highest priority.</b><br>
+      Whichever section scored lowest is where AI will deliver the fastest return. That's your starting point.
+    </div>
+    <div class="focus-item">
+      <h3>Sales &amp; Marketing below 26?</h3>
+      <p>You're likely losing leads to slow response times. AI-powered lead response and automated follow-up are the #1 revenue lever.</p>
+    </div>
+    <div class="focus-item">
+      <h3>Leadership below 18?</h3>
+      <p>Decisions are being made on stale data. Automated dashboards and AI-summarized reporting change this overnight.</p>
+    </div>
+    <div class="focus-item">
+      <h3>Operations below 12?</h3>
+      <p>Your team is spending hours weekly on tasks AI handles in minutes. Workflow automation pays for itself immediately.</p>
+    </div>
+    <div class="focus-item">
+      <h3>Admin below 13?</h3>
+      <p>Your highest-paid people are doing your lowest-value work. AI-assisted admin is the fastest quality-of-life win.</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <h2>Your Next Step</h2>
+    <div class="cta-sub">Join our free Executive Webinar:</div>
+    <div class="cta-quote">"How Companies Use AI to Increase Revenue Without Hiring"</div>
+    <ul>
+      <li>The 3 AI automations every business should implement first</li>
+      <li>How to cut 10–20 hours/week of manual work without adding headcount</li>
+      <li>Your personalized AI Implementation Roadmap based on your scorecard</li>
+    </ul>
+    <div class="cta-link">➡ Register Now: <a href="#">[YourWebinarLink.com]</a></div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-wrap">
+    <button class="btn-submit" onclick="submitScorecard()">Submit My Scorecard →</button>
+  </div>
+
+  <!-- THANK YOU -->
+  <div class="thankyou" id="thankyou">
+    <div class="thankyou-icon">✓</div>
+    <h2>Thank You!</h2>
+    <p>Your scorecard has been submitted. A member of the GatorPixel AI team will review your results and reach out within one business day.</p>
+  </div>
+
+  <div class="footer">© GatorPixel AI &nbsp;|&nbsp; gatorpixelai.com</div>
+
+</div>
+
+<script>
+  const sections = {
+    sub1: ['q01','q02','q03','q04','q05','q06','q07','q08'],
+    sub2: ['q09','q10','q11','q12','q13'],
+    sub3: ['q14','q15','q16'],
+    sub4: ['q17','q18','q19','q20'],
+  };
+  const maxes = { sub1: 40, sub2: 25, sub3: 15, sub4: 20 };
+
+  function getVal(name) {
+    const checked = document.querySelector(`input[name="${name}"]:checked`);
+    return checked ? parseInt(checked.value) : 0;
+  }
+
+  function updateScores() {
+    let total = 0;
+    for (const [id, qs] of Object.entries(sections)) {
+      const score = qs.reduce((sum, q) => sum + getVal(q), 0);
+      const answered = qs.filter(q => document.querySelector(`input[name="${q}"]:checked`)).length;
+      document.getElementById(id).textContent = answered > 0 ? `${score} / ${maxes[id]}` : `____ / ${maxes[id]}`;
+      total += score;
+    }
+    const allAnswered = Object.values(sections).flat().filter(q => document.querySelector(`input[name="${q}"]:checked`)).length;
+    document.getElementById('total-display').textContent = allAnswered > 0 ? `(${total})` : '';
+  }
+
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', updateScores));
+
+  async function submitScorecard() {
+    const data = { _subject: 'GatorPixel AI Scorecard Submission' };
+    let total = 0;
+    for (const [id, qs] of Object.entries(sections)) {
+      qs.forEach(q => {
+        const val = getVal(q);
+        data[q] = val || 'No answer';
+        total += val;
+      });
+      const score = qs.reduce((sum, q) => sum + getVal(q), 0);
+      data[`${id}_subtotal`] = `${score} / ${maxes[id]}`;
+    }
+    data['TOTAL_SCORE'] = `${total} / 100`;
+
+    try {
+      const response = await fetch('https://formspree.io/f/mnjoqprq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert('Submission error: ' + (result.error || response.status));
+        return;
+      }
+    } catch(e) {
+      alert('Network error: ' + e.message);
+      return;
+    }
+
+    document.querySelector('.submit-wrap').style.display = 'none';
+    document.getElementById('thankyou').classList.add('active');
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
